@@ -22,7 +22,7 @@ create TABLE sightings(
 sighthing_id SERIAL PRIMARY KEY,
 ranger_id  INT,
 species_id INT NOT NULL,
-sighting_time DATE NOT NULL,
+sighting_time  TIMESTAMP NOT NULL,
 location TEXT NOT NULL,
 notes TEXT,
 FOREIGN KEY(ranger_id) REFERENCES rangers(ranger_id) on DELETE CASCADE,
@@ -66,49 +66,10 @@ VALUES ('Alice Green', 'Northern Hills'),
 
 
 INSERT INTO species (common_name, scientific_name, discovery_date, conservation_status)
-VALUES ('Snow Leopard', 'Panthera uncia', '1775-01-01', 'Endangered'),
-('Bengal Tiger', 'Panthera tigris tigris', '1758-01-01', 'Endangered'),
-('Red Panda', 'Ailurus fulgens', '1825-01-01', 'Vulnerable'),
-('Asiatic Elephant', 'Elephas maximus indicus', '1758-01-01', 'Endangered'),
-('Giant Panda', 'Ailuropoda melanoleuca', '1869-01-01', 'Vulnerable'),
-('African Elephant', 'Loxodonta africana', '1797-01-01', 'Vulnerable'),
-('Black Rhino', 'Diceros bicornis', '1758-01-01', 'Critically Endangered'),
-('Blue Whale', 'Balaenoptera musculus', '1758-01-01', 'Endangered'),
-('Green Sea Turtle', 'Chelonia mydas', '1758-01-01', 'Endangered'),
-('Polar Bear', 'Ursus maritimus', '1774-01-01', 'Vulnerable'),
-('Orangutan', 'Pongo pygmaeus', '1760-01-01', 'Critically Endangered'),
-('Mountain Gorilla', 'Gorilla beringei beringei', '1903-01-01', 'Endangered'),
-('Saola', 'Pseudoryx nghetinhensis', '1992-01-01', 'Critically Endangered'),
-('Snowy Owl', 'Bubo scandiacus', '1758-01-01', 'Least Concern'),
-('Amur Leopard', 'Panthera pardus orientalis', '1857-01-01', 'Critically Endangered'),
-('Hawksbill Turtle', 'Eretmochelys imbricata', '1766-01-01', 'Critically Endangered'),
-('California Condor', 'Gymnogyps californianus', '1797-01-01', 'Critically Endangered'),
-('African Lion', 'Panthera leo', '1758-01-01', 'Vulnerable'),
-('Sloth Bear', 'Melursus ursinus', '1791-01-01', 'Vulnerable'),
-('Koala', 'Phascolarctos cinereus', '1816-01-01', 'Vulnerable'),
-('Indian Cobra', 'Naja naja', '1758-01-01', 'Least Concern'),
-('Komodo Dragon', 'Varanus komodoensis', '1912-01-01', 'Endangered'),
-('Maned Wolf', 'Chrysocyon brachyurus', '1815-01-01', 'Near Threatened'),
-('Okapi', 'Okapia johnstoni', '1901-01-01', 'Endangered'),
-('Addax', 'Addax nasomaculatus', '1816-01-01', 'Critically Endangered'),
-('Galápagos Tortoise', 'Chelonoidis nigra', '1824-01-01', 'Vulnerable'),
-('Axolotl', 'Ambystoma mexicanum', '1864-01-01', 'Critically Endangered'),
-('Red-crowned Crane', 'Grus japonensis', '1776-01-01', 'Endangered'),
-('Gaur', 'Bos gaurus', '1827-01-01', 'Vulnerable'),
-('Indian Pangolin', 'Manis crassicaudata', '1822-01-01', 'Endangered');
+VALUES ('Asiatic Elephant', 'Elephas maximus indicus', '1758-01-01', 'Endangered');
 
 
-create TABLE sightings(
-sighthing_id SERIAL PRIMARY KEY,
-ranger_id  INT,
-species_id INT NOT NULL,
-sighting_time DATE NOT NULL,
-location TEXT NOT NULL,
-notes TEXT,
-FOREIGN KEY(ranger_id) REFERENCES rangers(ranger_id) on DELETE CASCADE,
-Foreign Key (species_id) REFERENCES species (species_id) on DELETE CASCADE
 
-);
 
 
 INSERT INTO sightings(ranger_id,species_id,sighting_time,location,notes)
@@ -147,3 +108,72 @@ VALUES (1, 3, '2024-05-01 07:30:00', 'Bamboo Forest Trail', 'Seen climbing a tre
 SELECT * from rangers;
 SELECT * from species;
 SELECT * from sightings;
+-- DROP TABLE rangers;
+-- DROP TABLE species;
+-- DROP TABLE sightings;
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------
+
+
+
+
+
+-- problem 1
+INSERT INTO rangers(name,region)
+VALUES('Derek Fox','Coastal Plains');
+
+
+
+-- problem 2
+SELECT COUNT(DISTINCT species_id) as unique_species_count from sightings;
+
+
+
+-- problem 3
+-- UPDATE sightings SET location='Snowfall Pass' 
+-- WHERE sighthing_id=10;
+UPDATE sightings SET ranger_id= 24 
+WHERE sighthing_id=16;
+SELECT  * FROM sightings WHERE location ILIKE '%pass%';
+
+
+-- problem 4
+SELECT rangers.name As "name", COUNT(*) as total_sightings  FROM sightings 
+JOIN rangers ON sightings.ranger_id = rangers.ranger_id GROUP BY "name";
+
+-- problem 5
+SELECT common_name FROM  species WHERE species_id NOT IN(
+    SELECT DISTINCT species_id FROM sightings
+)
+
+-- problem 6
+SELECT sp.common_name,s.sighting_time , r.name FROM sightings s JOIN species sp ON s.species_id = sp.species_id JOIN rangers r ON s.ranger_id =r.ranger_id ORDER BY s.sighting_time DESC LIMIT 2;
+
+
+-- problem 7
+INSERT INTO species (common_name, scientific_name, discovery_date, conservation_status)
+UPDATE  species SET conservation_status ='Historic' WHERE(
+    discovery_date < '1800-01-01'
+);
+
+
+-- problem 8
+SELECT sighthing_id ,
+CASE 
+    WHEN EXTRACT(HOUR FROM sighting_time)<12  THEN 'Morning'
+    WHEN EXTRACT(HOUR FROM sighting_time) BETWEEN 12 AND 17 THEN 'Afternoon'
+    -- WHEN EXTRACT(HOUR FROM sighting_time) BETWEEN 17 AND 24 THEN 'Evening'
+    ELSE 'Evening'
+END as time_of_day
+FROM sightings;
+
+
+-- problem 9
+DELETE FROM rangers WHERE ranger_id NOT IN(
+    SELECT DISTINCT ranger_id FROM sightings
+)
+
